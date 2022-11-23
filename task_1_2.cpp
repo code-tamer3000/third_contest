@@ -39,14 +39,15 @@ Node::~Node() {
 
 class Tree {
     public:
+    Tree() : root(nullptr) {}
     ~Tree();
     void Add(int key);
-    void pre_order_printer() const;
+    void PreOrderPrinter() const;
 
     private:
     Node* root = nullptr;
  
-    void pre_order_printer(Node* node) const;
+    void PreOrderPrinter(Node* node) const;
 };
  
 Tree::~Tree() {
@@ -56,16 +57,16 @@ Tree::~Tree() {
 void Tree::Add(int key) {
     if (!root) {
         root = new Node(key);
-    return;
+        return;
     }
     Node* current = root;
     while (true) {
-        if (current->Data > key) {
+        if (key < current->Data) {
             if (current->Left != nullptr) {
                 current = current->Left;
             } else {
-            current->Left = new Node(key, current);
-            break;
+                current->Left = new Node(key, current);
+                break;
             }
         } else {
             if (current->Right != nullptr) {
@@ -78,13 +79,13 @@ void Tree::Add(int key) {
     }
 }
 
-void Tree::pre_order_printer() const{
+void Tree::PreOrderPrinter() const {
     if (root) {
-        pre_order_printer(root);
+        PreOrderPrinter(root);
     }
 }
 
-void Tree::pre_order_printer(Node* root) const {
+void Tree::PreOrderPrinter(Node* root) const {
     Node* current = root;
     std::stack<Node*> nodes;
     nodes.push(current);
@@ -110,5 +111,7 @@ int main() {
         std::cin >> tmp;
         tree.Add(tmp);
     }
-    tree.pre_order_printer();
+    tree.PreOrderPrinter();
+    std::cout << std::endl;
+    return 0;
 }
