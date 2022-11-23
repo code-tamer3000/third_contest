@@ -57,25 +57,25 @@ void Tree::Add(int key) {
     if (!root) {
         root = new Node(key);
     return;
-     }
+    }
     Node* current = root;
     while (true) {
         if (current->Data > key) {
-            if (current->Left != nullptr)
+            if (current->Left != nullptr) {
                 current = current->Left;
-            else {
+            } else {
             current->Left = new Node(key, current);
             break;
             }
         } else {
-        if (current->Right != nullptr)
-            current = current->Right;
-        else {
-            current->Right = new Node(key, current);
-            break;
+            if (current->Right != nullptr) {
+                current = current->Right;
+            } else {
+                current->Right = new Node(key, current);
+                break;
+            }
         }
     }
-  }
 }
 
 void Tree::pre_order_printer() const{
@@ -88,7 +88,7 @@ void Tree::pre_order_printer(Node* root) const {
     Node* current = root;
     std::stack<Node*> nodes;
     nodes.push(current);
-    while (!(nodes.empty())) {
+    while (!nodes.empty()) {
         current = nodes.top();
         nodes.pop();
         std::cout << current->Data << ' ';
