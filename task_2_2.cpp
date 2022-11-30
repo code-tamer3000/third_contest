@@ -33,9 +33,8 @@ struct Node {
     int Data;
     Node* Left = nullptr;
     Node* Right = nullptr;
-    void Print() const;
  
-    explicit Node(int data, Node* parent = nullptr) : Data(data) {}
+    explicit Node(int data) : Data(data) {}
 };
  
 Node::~Node() {
