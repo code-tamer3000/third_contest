@@ -102,8 +102,8 @@ bool HashTable::Add(const std::string& key) {
     curr_fill++;
     table[hash1].key = key;
     if (curr_fill == fill_factor * 0.75) {
-            grow();
-        }
+        grow();
+    }
     return true;
 }
 
