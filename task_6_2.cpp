@@ -30,7 +30,7 @@ int main() {
     int start = 0;
     int end = 0;
     while (std::cin >> start >> end) {
-        requests.emplace(time_line(start, end));
+        requests.emplace(start, end);
     }
     int counter = 0;
     int nearest_start = requests.top().start;
