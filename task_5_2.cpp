@@ -48,11 +48,11 @@ class HashTable {
 };
 
 size_t hash_1(const std::string& key) { // полиномиальное хэширование
-    const int param = 31;
-    const int mod = 1e9+7;
+    const size_t param = 31;
+    const size_t mod = 1e9+7;
     size_t param_in_pow = 1;
     size_t hash_val = 0;
-    for (int i = 0; i < key.length(); i++) {
+    for (size_t i  = 0; i < key.length(); i++) {
         hash_val += ((key[i] - 'a' + 1) * param_in_pow) % mod;
         param_in_pow *= param;
     }
@@ -60,10 +60,10 @@ size_t hash_1(const std::string& key) { // полиномиальное хэши
 }
 
 size_t hash_2(const std::string& key) { // метод горнера
-    const int param = 30;
+    const size_t param = 30;
     size_t hash_val = 0;
-    const int mod = 1e9+7;
-    for (int i = 0; i < key.length(); i++) {
+    const size_t mod = 1e9+7;
+    for (size_t i  = 0; i < key.length(); i++) {
         hash_val = (hash_val * param + key[i]) % mod;
     }
     hash_val = (hash_val * 2 + 1) % mod;
@@ -76,20 +76,18 @@ size_t hash_2(const std::string& key) { // метод горнера
 bool HashTable::Add(const std::string& key) {
     size_t hash1 = hash_1(key) % table.size();
     size_t hash2 = hash_2(key) % table.size();
-    bool place_to_add = false;
+    bool found_place_to_add = false;
     size_t curr_hash = hash1;
     for (size_t counter = 0; counter < table.size(); counter++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
                 return false;
             }
-        } else if (!place_to_add) {
+        } else if (!found_place_to_add) {
             curr_hash = hash1;
-            place_to_add = true;
-        } else {
-            if (table[hash1].key == "") {
-                break;
-            }
+            found_place_to_add = true;
+        } else if (table[hash1].key == "") {
+            break;
         }
         hash1 = (hash1 + hash2) % table.size();
     }
@@ -107,7 +105,7 @@ bool HashTable::Add(const std::string& key) {
 bool HashTable::Remove(const std::string& key) {
     size_t hash1 = hash_1(key) % table.size();
     size_t hash2 = hash_2(key) % table.size();
-    for (int i = 0; i < table.size(); i++) {
+    for (size_t i  = 0; i < table.size(); i++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
                 table[hash1].alive = false;
@@ -124,7 +122,7 @@ bool HashTable::Remove(const std::string& key) {
 bool HashTable::Has(const std::string& key) const {
     size_t hash1 = hash_1(key) % table.size();
     size_t hash2 = hash_2(key) % table.size();
-    for (int i = 0; i < table.size(); i++) {
+    for (size_t i  = 0; i < table.size(); i++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
                 return true;
