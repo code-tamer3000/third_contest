@@ -26,42 +26,42 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
-struct HashNode {
-    std::string key;
-    bool alive = false;
-};
+#include <cassert>
 
 class HashTable {
   public:
     explicit HashTable(int initial_size = 8) : table(initial_size) , fill_factor(initial_size) , curr_fill(0) {}
-    ~HashTable() {}
     bool Has(const std::string& key) const;
     bool Add(const std::string& key);
     bool Remove(const std::string& key);
  
   private:
-    std::vector<HashNode> table;
     int fill_factor;
     int curr_fill;
     void grow();
+    struct HashNode {
+        std::string key;
+        bool alive;
+        HashNode() : alive(false) {}
+    };
+    std::vector<HashNode> table;
 };
 
-unsigned long long  hash_1 (const std::string& key) { // полиномиальное хэширование
+unsigned long long hash_1(const std::string& key) { // полиномиальное хэширование
     const int param = 31;
     const int mod = 1e9+7;
-    unsigned long long  param_in_pow = 1;
-    unsigned long long  hash_val = 0;
+    unsigned long long param_in_pow = 1;
+    unsigned long long hash_val = 0;
     for (int i = 0; i < key.length(); i++) {
-        hash_val += ( (key[i] - 'a' + 1) * param_in_pow) % mod;
+        hash_val += ((key[i] - 'a' + 1) * param_in_pow) % mod;
         param_in_pow *= param;
     }
     return hash_val;
 }
 
-unsigned long long  hash_2 (const std::string& key) { // метод горнера
+unsigned long long hash_2(const std::string& key) { // метод горнера
     const int param = 30;
-    unsigned long long  hash_val = 0;
+    unsigned long long hash_val = 0;
     const int mod = 1e9+7;
     for (int i = 0; i < key.length(); i++) {
         hash_val = (hash_val * param + key[i]) % mod;
@@ -74,76 +74,80 @@ unsigned long long  hash_2 (const std::string& key) { // метод горнер
 }
 
 bool HashTable::Add(const std::string& key) {
-    if (Has(key)) {
-        return false;
-    }
-    long long  hash1 = hash_1(key) % static_cast<int>(table.size());
-    long long  hash2 = hash_2(key) % static_cast<int>(table.size());
-    for (int i = 0 ; i < table.size(); i++) {
-        if (table[hash1].alive == false) {
-            table[hash1].alive = true;
-            if (table[hash1].key == "") {
-                curr_fill++;
+    long long hash1 = hash_1(key) % static_cast<size_t>(table.size());
+    long long hash2 = hash_2(key) % static_cast<size_t>(table.size());
+    long long counter = 0;
+    for ( ; counter < table.size(); counter++) {
+        if (table[hash1].alive) {
+            if (table[hash1].key == key) {
+                return false;
             }
-            table[hash1].key = key;
-            if (curr_fill == (fill_factor * 0.75)) {
-                grow();
-            }
-            return true;
+        } else {
+            break;
         }
-        hash1 = (hash1 + hash2) % static_cast<int>(table.size());
+        hash1 = (hash1 + hash2) % static_cast<size_t>(table.size());
     }
-    return false;
+    long long curr_hash = hash1;
+    for ( ; counter < table.size(); counter++) {
+        if (table[curr_hash].alive) {
+            if (table[curr_hash].key == key) {
+                return false;
+            }
+        } else if (table[curr_hash].key == "") {
+            break;
+        }
+        curr_hash = (curr_hash + hash2) % static_cast<size_t>(table.size());
+    }
+    table[hash1].alive = true;
+    curr_fill++;
+    table[hash1].key = key;
+    if (curr_fill == fill_factor * 0.75) {
+            grow();
+        }
+    return true;
 }
 
 bool HashTable::Remove(const std::string& key) {
-    if (!Has(key)) {
-        return false;
-    }
-    long long  hash1 = hash_1(key) % static_cast<int>(table.size());
-    long long  hash2 = hash_2(key) % static_cast<int>(table.size());
+    long long hash1 = hash_1(key) % static_cast<size_t>(table.size());
+    long long hash2 = hash_2(key) % static_cast<size_t>(table.size());
     for (int i = 0; i < table.size(); i++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
                 table[hash1].alive = false;
                 return true;
             }
-        } else if (table[hash1].key != "") {
-            
-        } else {
+        } else if (table[hash1].key == "") {
             return false;
-        }
-        hash1 = (hash1 + hash2) % static_cast<int>(table.size());
+        } 
+        hash1 = (hash1 + hash2) % static_cast<size_t>(table.size());
     }
     return false;
 }
 
 bool HashTable::Has(const std::string& key) const {
-    long long  hash1 = hash_1(key) % static_cast<int>(table.size());
-    long long  hash2 = hash_2(key) % static_cast<int>(table.size());
+    long long hash1 = hash_1(key) % static_cast<size_t>(table.size());
+    long long hash2 = hash_2(key) % static_cast<size_t>(table.size());
     for (int i = 0; i < table.size(); i++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
                 return true;
             }
-        } else if (table[hash1].key != "") {
-            
-        } else {
+        } else if (table[hash1].key == "") {
             return false;
-        }
-        hash1 = (hash1 + hash2) % static_cast<int>(table.size());
+        } 
+        hash1 = (hash1 + hash2) % static_cast<size_t>(table.size());
     }
     return false;
 }
 
 void HashTable::grow() {
     HashTable new_table(fill_factor * 2);
-    for (int i = 0; i < table.size(); i++) { 
-        if (table[i].alive) {
-            new_table.Add(table[i].key);
+    for (const auto& node : table) { 
+        if (node.alive) {
+            new_table.Add(node.key);
         }
     }
-    *this = new_table;
+    *this = std::move(new_table);
 }
 
 int main() {
@@ -151,6 +155,7 @@ int main() {
     char command = 0;
     std::string key;
     while (std::cin >> command >> key) {
+        assert(command == '+' || command == '-' || command == '?');
         switch (command) {
         case '?':
             std::cout << (my_table.Has(key) ? "OK" : "FAIL") << std::endl;
