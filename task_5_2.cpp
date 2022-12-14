@@ -47,11 +47,11 @@ class HashTable {
     std::vector<HashNode> table;
 };
 
-unsigned long long hash_1(const std::string& key) { // полиномиальное хэширование
+size_t hash_1(const std::string& key) { // полиномиальное хэширование
     const int param = 31;
     const int mod = 1e9+7;
-    unsigned long long param_in_pow = 1;
-    unsigned long long hash_val = 0;
+    size_t param_in_pow = 1;
+    size_t hash_val = 0;
     for (int i = 0; i < key.length(); i++) {
         hash_val += ((key[i] - 'a' + 1) * param_in_pow) % mod;
         param_in_pow *= param;
@@ -59,9 +59,9 @@ unsigned long long hash_1(const std::string& key) { // полиномиальн�
     return hash_val;
 }
 
-unsigned long long hash_2(const std::string& key) { // метод горнера
+size_t hash_2(const std::string& key) { // метод горнера
     const int param = 30;
-    unsigned long long hash_val = 0;
+    size_t hash_val = 0;
     const int mod = 1e9+7;
     for (int i = 0; i < key.length(); i++) {
         hash_val = (hash_val * param + key[i]) % mod;
@@ -74,33 +74,30 @@ unsigned long long hash_2(const std::string& key) { // метод горнера
 }
 
 bool HashTable::Add(const std::string& key) {
-    long long hash1 = hash_1(key) % static_cast<size_t>(table.size());
-    long long hash2 = hash_2(key) % static_cast<size_t>(table.size());
-    long long counter = 0;
-    for ( ; counter < table.size(); counter++) {
+    size_t hash1 = hash_1(key) % table.size();
+    size_t hash2 = hash_2(key) % table.size();
+    bool place_to_add = false;
+    size_t curr_hash = hash1;
+    for (size_t counter = 0; counter < table.size(); counter++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
                 return false;
             }
+        } else if (!place_to_add) {
+            curr_hash = hash1;
+            place_to_add = true;
         } else {
-            break;
-        }
-        hash1 = (hash1 + hash2) % static_cast<size_t>(table.size());
-    }
-    long long curr_hash = hash1;
-    for ( ; counter < table.size(); counter++) {
-        if (table[curr_hash].alive) {
-            if (table[curr_hash].key == key) {
-                return false;
+            if (table[hash1].key == "") {
+                break;
             }
-        } else if (table[curr_hash].key == "") {
-            break;
         }
-        curr_hash = (curr_hash + hash2) % static_cast<size_t>(table.size());
+        hash1 = (hash1 + hash2) % table.size();
     }
-    table[hash1].alive = true;
-    curr_fill++;
-    table[hash1].key = key;
+    table[curr_hash].alive = true;
+    if (table[curr_hash].key == "") {
+        curr_fill++;
+    }
+    table[curr_hash].key = key;
     if (curr_fill == fill_factor * 0.75) {
         grow();
     }
@@ -108,8 +105,8 @@ bool HashTable::Add(const std::string& key) {
 }
 
 bool HashTable::Remove(const std::string& key) {
-    long long hash1 = hash_1(key) % static_cast<size_t>(table.size());
-    long long hash2 = hash_2(key) % static_cast<size_t>(table.size());
+    size_t hash1 = hash_1(key) % table.size();
+    size_t hash2 = hash_2(key) % table.size();
     for (int i = 0; i < table.size(); i++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
@@ -119,14 +116,14 @@ bool HashTable::Remove(const std::string& key) {
         } else if (table[hash1].key == "") {
             return false;
         } 
-        hash1 = (hash1 + hash2) % static_cast<size_t>(table.size());
+        hash1 = (hash1 + hash2) % table.size();
     }
     return false;
 }
 
 bool HashTable::Has(const std::string& key) const {
-    long long hash1 = hash_1(key) % static_cast<size_t>(table.size());
-    long long hash2 = hash_2(key) % static_cast<size_t>(table.size());
+    size_t hash1 = hash_1(key) % table.size();
+    size_t hash2 = hash_2(key) % table.size();
     for (int i = 0; i < table.size(); i++) {
         if (table[hash1].alive) {
             if (table[hash1].key == key) {
@@ -135,7 +132,7 @@ bool HashTable::Has(const std::string& key) const {
         } else if (table[hash1].key == "") {
             return false;
         } 
-        hash1 = (hash1 + hash2) % static_cast<size_t>(table.size());
+        hash1 = (hash1 + hash2) % table.size();
     }
     return false;
 }
