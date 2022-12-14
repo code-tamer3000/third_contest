@@ -21,11 +21,7 @@ struct time_line {
 class comp {
   public:
     bool operator()(const time_line& first, const time_line& second) {
-        if (first.end == second.end) {
-            return second.start < first.start;
-        } else {
-            return second.end < first.end;
-        }
+        return first.end == second.end ? second.start < first.start : second.end < first.end;
     }
 };
 
@@ -34,7 +30,7 @@ int main() {
     int start = 0;
     int end = 0;
     while (std::cin >> start >> end) {
-        requests.push(time_line(start, end));
+        requests.emplace(time_line(start, end));
     }
     int counter = 0;
     int nearest_start = requests.top().start;
