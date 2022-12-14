@@ -108,6 +108,8 @@ bool HashTable::Remove(const std::string& key) {
                 table[hash1].alive = false;
                 return true;
             }
+        } else if (table[hash1].key != "") {
+            
         } else {
             return false;
         }
@@ -124,6 +126,8 @@ bool HashTable::Has(const std::string& key) const {
             if (table[hash1].key == key) {
                 return true;
             }
+        } else if (table[hash1].key != "") {
+            
         } else {
             return false;
         }
